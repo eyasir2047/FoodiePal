@@ -8,8 +8,10 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.net.URL;
@@ -69,6 +71,10 @@ public class HelloController implements Initializable {
 //
 //    }
 
+    private double x=0;
+    private double y=0;
+
+
     public void login(){
        // String sql="SELECT+ FROM admin WHERE username= ? and password= ?";
      //  connect=database.connectDb();
@@ -106,8 +112,9 @@ public class HelloController implements Initializable {
             else{
 
                //  if(result.next()){
-               if(username.getText().trim().equals("admin")&& password.getText().equals("admin123")){
+               if(username.getText().trim().equals("Abrar")&& password.getText().equals("admin123")){
 
+                   data.username=username.getText();
 
               //  JOptionPane.showMessageDialog(null,"Successfully Login!");
 
@@ -123,8 +130,24 @@ public class HelloController implements Initializable {
 
                     //link your dashboard
                     Parent root= FXMLLoader.load(getClass().getResource("dashboard.fxml"));
+
+
+
                     Stage stage=new Stage();
                     Scene scene=new Scene(root);
+
+                   root.setOnMousePressed((MouseEvent event)->{
+                       x=event.getSceneX();
+                       y=event.getSceneY();
+                   });
+                   root.setOnMouseDragged((MouseEvent event)->{
+                       stage.setX(event.getSceneX()-x);
+                       stage.setY(event.getSceneY()-y);
+
+                       stage.setOpacity(1.3f);
+                   });
+
+                    stage.initStyle(StageStyle.TRANSPARENT);
 
                     stage.setScene(scene);
                     stage.show();
