@@ -26,19 +26,6 @@ import javax.swing.JOptionPane;
 
 
 public class HelloController implements Initializable {
-//    @FXML
-//    private Label label;
-//
-//    @FXML
-//    protected void onHelloButtonClick() {
-//        label.setText("Welcome to JavaFX Application!");
-//    }
-//
-//    @FXML
-//    private void handleButtonAction(ActionEvent event){
-//        System.out.println("You clicked me!");
-//        label.setText("Hello World");
-//    }
 
     @FXML
     private Button close;
@@ -61,47 +48,32 @@ public class HelloController implements Initializable {
     private Connection connect;
     private PreparedStatement prepare;
     private ResultSet result;
-//    @FXML
-//    void close(ActionEvent event) {
-//
-//    }
-//
-//    @FXML
-//    void login(ActionEvent event) {
-//
-//    }
+
 
     private double x=0;
     private double y=0;
 
 
     public void login(){
-       // String sql="SELECT+ FROM admin WHERE username= ? and password= ?";
-     //  connect=database.connectDb();
+   String sql="SELECT* FROM admin WHERE username= ? and password= ?";
+     connect=database.connectDb();
+
 
 
 
         try{
 
-//            prepare= connect.prepareStatement(sql);
-//            prepare.setString(1,username.getText());
-//            prepare.setString(2,password.getText());
-//
-//            result=prepare.executeQuery();
+           prepare= connect.prepareStatement(sql);
+          prepare.setString(1,username.getText());
+           prepare.setString(2,password.getText());
 
-//            prepare=connect.prepareStatement("select + from admin where username=? and password=?");
-//            prepare.setString(1,username.getText());
-//            prepare.setString(2,password.getText());
-//            result=prepare.executeQuery();
+        result=prepare.executeQuery();
+
 
 
             Alert alert;
 
             if(username.getText().isEmpty()|| password.getText().isEmpty()){
-//                JOptionPane.showMessageDialog(null,"Please fill all blank fields");
-//                username.setText("");
-//                password.setText("");
-//                username.requestFocus();
 
                 alert=new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error Message");
@@ -111,12 +83,11 @@ public class HelloController implements Initializable {
             }
             else{
 
-               //  if(result.next()){
-               if(username.getText().trim().equals("Abrar")&& password.getText().equals("admin123")){
+                 if(result.next()){
+
 
                    data.username=username.getText();
 
-              //  JOptionPane.showMessageDialog(null,"Successfully Login!");
 
                     alert=new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Information Message");
@@ -155,11 +126,7 @@ public class HelloController implements Initializable {
 
                 }
                  else{
-                    //if wrong username or password
-//                     JOptionPane.showMessageDialog(null,"Wrong Username or Password");
-//                     username.setText("");
-//                     password.setText("");
-//                     username.requestFocus();
+
 
 
                     alert=new Alert(Alert.AlertType.ERROR);

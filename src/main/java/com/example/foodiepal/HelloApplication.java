@@ -19,16 +19,10 @@ public class HelloApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-      //  FXMLLoader root = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
+
         Parent root=FXMLLoader.load(getClass().getResource("hello-view.fxml"));
         Scene scene=new Scene(root);
-       // Scene scene = new Scene(root.load());
-      //  stage.setTitle("FoodiePal");
-//        Button button=(Button)root.lookup("");
-//        button.setOnMousePressed((MouseEvent event)->{
-//            x=event.getX();
-//             y=event.getY();
-//        });
+
 
 
 
@@ -50,12 +44,6 @@ public class HelloApplication extends Application {
 
        stage.initStyle(StageStyle.TRANSPARENT);
 
-
-
-//        root.setOnMousePressed((MouseEvent event)->{
-//            x=event.getX();
-//            y=event.getY();
-//        });
         stage.setScene(scene);
         stage.show();
     }
