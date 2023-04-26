@@ -1,8 +1,16 @@
 package com.example.foodiepal;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.Initializable;
 
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Application;
@@ -11,6 +19,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.control.Button;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -35,20 +44,25 @@ public class dashboardController implements Initializable {
     @FXML
     private Button availableFD_clearBtn;
 
-    @FXML
-    private TableColumn<?, ?> availableFD_col_price;
 
     @FXML
-    private TableColumn<?, ?> availableFD_col_productID;
+    private TableView<categories> availableFD_tableView;
+
 
     @FXML
-    private TableColumn<?, ?> availableFD_col_productName;
+    private TableColumn<categories, String> availableFD_col_price;
 
     @FXML
-    private TableColumn<?, ?> availableFD_col_status;
+    private TableColumn<categories, String> availableFD_col_productID;
 
     @FXML
-    private TableColumn<?, ?> availableFD_col_type;
+    private TableColumn<categories, String> availableFD_col_productName;
+
+    @FXML
+    private TableColumn<categories, String> availableFD_col_status;
+
+    @FXML
+    private TableColumn<categories, String> availableFD_col_type;
 
     @FXML
     private Button availableFD_deleteBtn;
@@ -146,6 +160,8 @@ public class dashboardController implements Initializable {
     @FXML
     private Button order_removeBtn;
 
+
+
     @FXML
     private TableView<?> order_tableView;
 
@@ -161,6 +177,193 @@ public class dashboardController implements Initializable {
     private Button minimize;
     @FXML
     private Button close;
+
+    private Connection connect;
+    private PreparedStatement prepare;
+    private Statement statement;
+    private ResultSet result;
+
+    public void availableFDAdd(){
+        String sql="INSERT INTO category (product_id,product_name,type,price,status) "
+                +"VALUES(?,?,?,?,?)";
+        connect= database.connectDb();
+
+        try{
+            prepare=connect.prepareStatement(sql);
+            prepare.setString(1,availableFD_productID.getText());
+            prepare.setString(2,availableFD_productName.getText());
+            prepare.setString(3,(String) availableFD_productType.getSelectionModel().getSelectedItem());
+            prepare.setString(4,availableFD_productPrice.getText());
+            prepare.setString(5,(String)availableFD_productStatus.getSelectionModel().getSelectedItem());
+
+            Alert alert;
+
+            if(availableFD_productID.getText().isEmpty()
+            || availableFD_productName.getText().isEmpty()
+            ||availableFD_productType.getSelectionModel()==null
+            || availableFD_productPrice.getText().isEmpty()
+            || availableFD_productStatus.getSelectionModel()==null){
+
+                alert= new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Please fill all blank fields");
+                alert.showAndWait();
+
+            }
+            else {
+
+                String checkData="SELECT product_id FROM category WHERE product_id='"
+                        +availableFD_productID.getText()+"'";
+
+                connect=database.connectDb();
+
+                statement=connect.createStatement();
+                result=statement.executeQuery(checkData);
+
+                if(result.next()){
+                    alert= new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Product ID: "+availableFD_productID.getText()+" is already exit!");
+                    alert.showAndWait();
+                }
+                else{
+                    prepare.executeUpdate();
+
+                    alert= new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Information Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Successfully Added|");
+                    alert.showAndWait();
+
+                    availableFDShowData();
+
+                }
+
+
+
+            }
+
+
+        }catch (Exception e){
+                e.printStackTrace();
+        }
+    }
+
+    public ObservableList<categories> availableFDListData(){
+
+        ObservableList<categories>listData=FXCollections.observableArrayList();
+
+        String sql="SELECT* FROM category";
+
+        connect=database.connectDb();
+
+        try{
+            prepare=connect.prepareStatement(sql);
+            result=prepare.executeQuery();
+
+            categories cat;
+
+            while(result.next()){
+                cat=new categories(result.getString("product_id"),
+                        result.getString("product_name"),result.getString("type"),
+                        result.getDouble("price"),result.getString("status"));
+
+                listData.add(cat);
+
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return  listData;
+
+    }
+
+    private  ObservableList<categories>availableFDList;
+    public  void availableFDShowData(){
+        availableFDList=availableFDListData();
+        availableFD_col_productID.setCellValueFactory(new PropertyValueFactory<>("productId"));
+        availableFD_col_productName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        availableFD_col_type.setCellValueFactory(new PropertyValueFactory<>("type"));
+        availableFD_col_price.setCellValueFactory(new PropertyValueFactory<>("price"));
+        availableFD_col_status.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+
+        availableFD_tableView.setItems(availableFDList);
+
+
+
+    }
+
+
+
+
+
+    //Available foods/drinks
+
+    private  String[] categories={"Meals","Drinks"};
+
+    public  void availableFDType(){
+        List<String>listCat=new ArrayList<>();
+
+        for(String data:categories){
+            listCat.add(data);
+        }
+
+        ObservableList listData=FXCollections.observableArrayList(listCat);
+        availableFD_productType.setItems(listData);
+
+
+    }
+    private String[] status={"Available","Not Available"};
+    public void availableFDStatus(){
+        List<String> listStatus= new ArrayList<>();
+        for(String data: status){
+            listStatus.add(data);
+        }
+        ObservableList listData= FXCollections.observableArrayList(listStatus);
+        availableFD_productStatus.setItems(listData);
+
+    }
+
+    public void switchForm(ActionEvent event){
+
+        if(event.getSource()==dashboard_btn){
+            dashboard_form.setVisible(true);
+            availableFD_form.setVisible(false);
+            order_form.setVisible(false);
+
+            dashboard_btn.setStyle("-fx-background-color: #3796a7; -fx-text-fill: #fff;-fx-border-width: 0px;");
+            availableFD_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
+            order_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
+        }
+        else if(event.getSource()==availableFD_btn){
+            dashboard_form.setVisible(false);
+            availableFD_form.setVisible(true);
+            order_form.setVisible(false);
+
+            availableFD_btn.setStyle("-fx-background-color: #3796a7; -fx-text-fill: #fff;-fx-border-width: 0px;");
+            dashboard_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
+            order_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
+
+            availableFDShowData();
+
+        }
+        else if(event.getSource()==order_btn){
+            dashboard_form.setVisible(false);
+            availableFD_form.setVisible(false);
+            order_form.setVisible(true);
+
+            order_btn.setStyle("-fx-background-color: #3796a7; -fx-text-fill: #fff;-fx-border-width: 0px;");
+            availableFD_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
+            dashboard_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
+
+        }
+
+    }
 
     private  double x=0;
     private double y=0;
@@ -227,6 +430,10 @@ public class dashboardController implements Initializable {
     }
 
     public void initialize(URL url, ResourceBundle rb){
+
         displayUsername();
+        availableFDStatus();
+        availableFDType();
+        availableFDShowData();
     }
 }
