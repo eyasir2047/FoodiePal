@@ -156,7 +156,7 @@ public class dashboardController implements Initializable {
     private ComboBox<?> order_productName;
 
     @FXML
-    private Spinner<?> order_quantity;
+    private Spinner<Integer> order_quantity;
 
     @FXML
     private Button order_receiptBtn;
@@ -601,6 +601,73 @@ public class dashboardController implements Initializable {
 
     }
 
+    public void orderProductId(){
+        String sql="SELECT product_id FROM category WHERE status= 'Available' ";
+        connect=database.connectDb();
+        try {
+            prepare=connect.prepareStatement(sql);
+            result=prepare.executeQuery();
+
+            ObservableList listData=FXCollections.observableArrayList();
+
+            while(result.next()){
+                listData.add(result.getString("product_id"));
+            }
+
+            order_productID.setItems(listData);
+
+            orderProductName();
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void orderProductName(){
+
+        String sql="SELECT product_name FROM category WHERE product_id='"
+                +order_productID.getSelectionModel().getSelectedItem()+"'";
+
+        connect=database.connectDb();
+
+        try{
+            prepare=connect.prepareStatement(sql);
+            result=prepare.executeQuery();
+
+            ObservableList listData=FXCollections.observableArrayList();
+
+            while(result.next()){
+                listData.add(result.getString("product_name"));
+            }
+
+            order_productName.setItems(listData);
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    private SpinnerValueFactory<Integer>spinner;
+
+    public void orderSpinner(){
+        spinner=new SpinnerValueFactory.IntegerSpinnerValueFactory(0,50,0);
+
+        order_quantity.setValueFactory(spinner);
+
+
+    }
+
+    private int qty;
+    public void orderQuantity(){
+        qty=order_quantity.getValue();
+        System.out.println(qty);
+    }
+
+
+
     public void switchForm(ActionEvent event){
 
         if(event.getSource()==dashboard_btn){
@@ -634,6 +701,9 @@ public class dashboardController implements Initializable {
             availableFD_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
             dashboard_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
 
+            orderProductId();
+            orderProductName();
+            orderSpinner();
         }
 
     }
@@ -708,6 +778,10 @@ public class dashboardController implements Initializable {
         availableFDStatus();
         availableFDType();
         availableFDShowData();
+
+        orderProductId();
+        orderProductName();
+        orderSpinner();
 
     }
 }
