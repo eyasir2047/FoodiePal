@@ -4,8 +4,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.fxml.Initializable;
+import javafx.fxml.*;
 
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,10 +15,10 @@ import java.sql.Statement;
 import java.util.*;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
@@ -29,7 +30,6 @@ import java.util.function.Predicate;
 
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
@@ -125,6 +125,8 @@ public class dashboardController implements Initializable {
 
     @FXML
     private Button order_btn;
+    @FXML
+    private Label order_balance;
 
     @FXML
     private TableColumn< product, String > order_col_price;
@@ -184,7 +186,95 @@ public class dashboardController implements Initializable {
     private PreparedStatement prepare;
     private Statement statement;
     private ResultSet result;
+    public void dashboardNC(){
+        String sql = "SELECT COUNT(id) FROM product_info";
+        int nc =0;
+        connect = database.connectDb();
+        try {
+            statement =connect.createStatement();
+            result = statement.executeQuery(sql);
+            if(result.next()){
+                nc = result.getInt("COUNT(id)");
+            }
+            dashboard_NC.setText(String.valueOf(nc));
 
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public void dashboardTI(){
+        Date date = new Date();
+        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+        String sql ="SELECT SUM(total) FROM product_info WHERE date = '"+sqlDate+"'";
+        connect = database.connectDb();
+        double ti =0;
+        try {
+           statement = connect.createStatement();
+           result = statement.executeQuery(sql);
+           if(result.next()){
+               ti = result.getDouble("SUM(total)");
+           }
+           dashboard_TI.setText("$" + String.valueOf(ti));
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public void dashboardTIncome(){
+        String sql = "SELECT SUM(total) FROM product_info";
+        connect = database.connectDb();
+        double ti =0;
+        try {
+            statement = connect.createStatement();
+            result = statement.executeQuery(sql);
+            if(result.next()){
+                ti = result.getDouble("SUM(total)");
+            }
+            dashboard_Tincome.setText("$" + String.valueOf(ti));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public void dashboardNOCCChart(){
+        dashboard_NOCChart.getData().clear();
+        String sql = "SELECT date, COUNT(id) FROM product_info GROUP by date ORDER BY TIMESTAMP(date) ASC LIMIT 5";
+        connect = database.connectDb();
+        try {
+            XYChart.Series chart = new XYChart.Series<>();
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+            while (result.next()){
+                chart.getData().add(new XYChart.Data(result.getString(1), result.getInt(2)));
+            }
+            dashboard_NOCChart.getData().add(chart);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public void dashboardICC(){
+        dashboard_ICChart.getData().clear();
+        String sql = "SELECT date, SUM(total) FROM product_info GROUP BY date ORDER BY TIMESTAMP(total) ASC LIMIT 7";
+        connect = database.connectDb();
+        try {
+
+            XYChart.Series chart = new XYChart.Series();
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+            while (result.next()){
+                chart.getData().add(new XYChart.Data(result.getString(1), result.getDouble(2)));
+            }
+            dashboard_ICChart.getData().add(chart);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
     public void availableFDAdd(){
         String sql="INSERT INTO category (product_id,product_name,type,price,status) "
                 +"VALUES(?,?,?,?,?)";
@@ -653,7 +743,7 @@ public class dashboardController implements Initializable {
             //orderDisplayTotal();
 
            // orderListData();
-
+            orderDisplayTotal();
             orderDisplayData();
 
         }catch ( Exception e ){
@@ -661,6 +751,65 @@ public class dashboardController implements Initializable {
         }
     }
 
+    public void orderPay(){
+        orderCustomerId();
+        orderTotal();
+        String sql = "INSERT INTO product_info (customer_id, total, date) VALUES(?,?,?)";
+        connect =database.connectDb();
+        try {
+            Alert alert;
+            if(balance == 0
+            || String.valueOf(balance) =="$0.0"
+            || String.valueOf(balance) == null
+            || totalP == 0
+            || String.valueOf(totalP) =="$0.0"
+            || String.valueOf(totalP) == null){
+                alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Invalid :3");
+                alert.showAndWait();
+            }
+            else {
+                alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Confirmation Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Are you sure?");
+              Optional<ButtonType> option =  alert.showAndWait();
+              if(option.get().equals(ButtonType.OK)){
+                  prepare = connect.prepareStatement(sql);
+                  prepare.setString(1, String.valueOf(customerId));
+                  prepare.setString(2, String.valueOf(totalP));
+                  Date date = new Date();
+                  java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+
+                  prepare.setString(3,String.valueOf(sqlDate));
+                  prepare.executeUpdate();
+                  alert = new Alert(Alert.AlertType.INFORMATION);
+                  alert.setTitle("Information Message");
+                  alert.setHeaderText(null);
+                  alert.setContentText("Successful!");
+                  alert.showAndWait();
+                  order_total.setText("$0.0");
+                  order_balance.setText("$0.0");
+                  order_amount.setText("");
+              }
+              else {
+                  alert = new Alert(Alert.AlertType.ERROR);
+                  alert.setTitle("Information Message");
+                  alert.setHeaderText(null);
+                  alert.setContentText("Cancelled!");
+                  alert.showAndWait();
+              }
+
+            }
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
     private double totalP = 0;
     public void orderTotal(){
 
@@ -676,28 +825,43 @@ public class dashboardController implements Initializable {
                 totalP = result.getDouble("SUM(price)");
             }
 
-            orderDisplayTotal();
         }catch ( Exception e ){
             e.printStackTrace();
         }
     }
 
     private double amount;
+    private double balance;
     public void orderAmount(){
 
         orderTotal();
 
         Alert alert;
-        if( order_amount.getText().isEmpty() ){
+        if( order_amount.getText().isEmpty()
+            || order_amount.getText() == null
+            || order_amount.getText() == ""){
             alert = new Alert( Alert.AlertType.ERROR );
             alert.setHeaderText( null );
             alert.setContentText( "Please type the amount!");
+            alert.showAndWait();
+        }
+        else {
+            amount = Double.parseDouble(order_amount.getText());
+            if(amount <totalP){
+                order_amount.setText("");
+            }
+            else {
+                balance = amount -totalP;
+                order_balance.setText("$"+String.valueOf(balance));
+            }
+
         }
     }
     public void orderDisplayTotal(){
-
+        orderTotal();
         order_total.setText( "$" + String.valueOf( totalP ));
     }
+
     public ObservableList<product> orderListData(){
 
         orderCustomerId();
@@ -712,7 +876,8 @@ public class dashboardController implements Initializable {
 
             product prod;
             while ( result.next() ){
-                prod = new product( result.getString("product_id") ,
+                prod = new product( result.getInt("id"),
+                        result.getString("product_id"),
                         result.getString("product_name") ,
                         result.getString("type") ,
                         result.getDouble("price") ,
@@ -725,7 +890,63 @@ public class dashboardController implements Initializable {
 
         return listData;
     }
+    public void orderRemove(){
+        String sql = "DELETE FROM product WHERE id = " + item;
+        connect = database.connectDb();
+        try {
+            Alert alert;
+            if(item == 0
+            || String.valueOf(item) == null
+            || String.valueOf(item) ==""){
+                alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Please select the item first");
+                alert.showAndWait();
+            }
+            else {
+                alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Confirmation Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Are you sure you want to Remove item: "+item+"?");
 
+               Optional<ButtonType> option = alert.showAndWait();
+               if(option.get().equals(ButtonType.OK)){
+                   statement = connect.createStatement();
+                   statement.executeQuery(sql);
+                   alert = new Alert(Alert.AlertType.INFORMATION);
+                   alert.setTitle("Information Message");
+                   alert.setHeaderText(null);
+                   alert.setContentText("Successfully Removed!");
+                   alert.showAndWait();
+
+                   orderDisplayData();
+                   orderDisplayTotal();
+                   order_amount.setText("");
+                   order_balance.setText("$0.0");
+               }
+               else {
+                   alert = new Alert(Alert.AlertType.ERROR);
+                   alert.setTitle("Information Message");
+                   alert.setHeaderText(null);
+                   alert.setContentText("Cancelled!");
+                   alert.showAndWait();
+
+               }
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    private int item ;
+
+    public void orderSelectData(){
+        product prod = order_tableView.getSelectionModel().getSelectedItem();
+        int num = order_tableView.getSelectionModel().getSelectedIndex();
+        if((num -1) <-1) return;
+        item = prod.getId();
+    }
     private ObservableList< product > orderData;
     public void orderDisplayData(){
 
@@ -743,8 +964,8 @@ public class dashboardController implements Initializable {
 
     public void orderCustomerId(){
 
-       // String sql = "SELECT customer_id FROM product";
-        String sql = "SELECT id FROM product";
+        String sql = "SELECT customer_id FROM product";
+       // String sql = "SELECT id FROM product";
 
         connect = database.connectDb();
 
@@ -852,6 +1073,11 @@ public class dashboardController implements Initializable {
             dashboard_btn.setStyle("-fx-background-color: #3796a7; -fx-text-fill: #fff;-fx-border-width: 0px;");
             availableFD_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
             order_btn.setStyle("-fx-background-color: transparent;-fx-border-width:1px;-fx-text-fill:#000;");
+            dashboardNC();
+            dashboardTI();
+            dashboardTIncome();
+            dashboardNOCCChart();
+            dashboardICC();
         }
         else if(event.getSource()==availableFD_btn){
             dashboard_form.setVisible(false);
@@ -951,7 +1177,11 @@ public class dashboardController implements Initializable {
     }
 
     public void initialize(URL url, ResourceBundle rb){
-
+        dashboardNC();
+        dashboardTI();
+        dashboardTIncome();
+        dashboardNOCCChart();
+        dashboardICC();
         displayUsername();
         availableFDStatus();
         availableFDType();
