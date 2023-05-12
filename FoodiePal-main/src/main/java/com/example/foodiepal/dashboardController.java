@@ -890,16 +890,17 @@ public class dashboardController implements Initializable {
 
         return listData;
     }
+    private int item ;
     public void orderRemove(){
         String sql = "DELETE FROM product WHERE id = " + item;
         connect = database.connectDb();
         try {
             Alert alert;
             if(item == 0
-            || String.valueOf(item) == null
-            || String.valueOf(item) ==""){
+                    || String.valueOf(item) == null
+                    || String.valueOf(item) ==""){
                 alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error Message");
+                alert.setTitle("ERROR Message");
                 alert.setHeaderText(null);
                 alert.setContentText("Please select the item first");
                 alert.showAndWait();
@@ -908,38 +909,36 @@ public class dashboardController implements Initializable {
                 alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Confirmation Message");
                 alert.setHeaderText(null);
-                alert.setContentText("Are you sure you want to Remove item: "+item+"?");
+                alert.setContentText("Are you sure you want to Remove item: " + item +"?");
+                Optional<ButtonType> option =  alert.showAndWait();
+                if(option.get().equals((ButtonType.OK) )){
+                    statement = connect.createStatement();
+                    statement.executeUpdate(sql);
+                    alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Information Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Successfully Removed!");
+                    alert.showAndWait();
+                    orderDisplayData();
+                    orderDisplayTotal();
+                    order_amount.setText("");
+                    order_balance.setText("$0.0");
 
-               Optional<ButtonType> option = alert.showAndWait();
-               if(option.get().equals(ButtonType.OK)){
-                   statement = connect.createStatement();
-                   statement.executeQuery(sql);
-                   alert = new Alert(Alert.AlertType.INFORMATION);
-                   alert.setTitle("Information Message");
-                   alert.setHeaderText(null);
-                   alert.setContentText("Successfully Removed!");
-                   alert.showAndWait();
-
-                   orderDisplayData();
-                   orderDisplayTotal();
-                   order_amount.setText("");
-                   order_balance.setText("$0.0");
-               }
-               else {
-                   alert = new Alert(Alert.AlertType.ERROR);
-                   alert.setTitle("Information Message");
-                   alert.setHeaderText(null);
-                   alert.setContentText("Cancelled!");
-                   alert.showAndWait();
-
-               }
+                }
+                else {
+                    alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Information Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Cancelled!");
+                    alert.showAndWait();
+                }
             }
         }
         catch (Exception e){
             e.printStackTrace();
         }
     }
-    private int item ;
+
 
     public void orderSelectData(){
         product prod = order_tableView.getSelectionModel().getSelectedItem();
