@@ -55,19 +55,19 @@ public class HelloController implements Initializable {
 
 
     public void login(){
-   String sql="SELECT* FROM admin WHERE username= ? and password= ?";
-     connect=database.connectDb();
+        String sql="SELECT* FROM admin WHERE username= ? and password= ?";
+        connect=database.connectDb();
 
 
 
 
         try{
 
-           prepare= connect.prepareStatement(sql);
-          prepare.setString(1,username.getText());
-           prepare.setString(2,password.getText());
+            prepare= connect.prepareStatement(sql);
+            prepare.setString(1,username.getText());
+            prepare.setString(2,password.getText());
 
-        result=prepare.executeQuery();
+            result=prepare.executeQuery();
 
 
 
@@ -83,10 +83,10 @@ public class HelloController implements Initializable {
             }
             else{
 
-                 if(result.next()){
+                if(result.next()){
 
 
-                   data.username=username.getText();
+                    data.username=username.getText();
 
 
                     alert=new Alert(Alert.AlertType.INFORMATION);
@@ -97,7 +97,7 @@ public class HelloController implements Initializable {
 
 
                     //to hide your login form
-                   loginBtr.getScene().getWindow().hide();
+                    loginBtr.getScene().getWindow().hide();
 
                     //link your dashboard
                     Parent root= FXMLLoader.load(getClass().getResource("dashboard.fxml"));
@@ -107,16 +107,16 @@ public class HelloController implements Initializable {
                     Stage stage=new Stage();
                     Scene scene=new Scene(root);
 
-                   root.setOnMousePressed((MouseEvent event)->{
-                       x=event.getSceneX();
-                       y=event.getSceneY();
-                   });
-                   root.setOnMouseDragged((MouseEvent event)->{
-                       stage.setX(event.getSceneX()-x);
-                       stage.setY(event.getSceneY()-y);
+                    root.setOnMousePressed((MouseEvent event)->{
+                        x=event.getSceneX();
+                        y=event.getSceneY();
+                    });
+                    root.setOnMouseDragged((MouseEvent event)->{
+                        stage.setX(event.getSceneX()-x);
+                        stage.setY(event.getSceneY()-y);
 
-                       stage.setOpacity(1.3f);
-                   });
+                        stage.setOpacity(1.3f);
+                    });
 
                     stage.initStyle(StageStyle.TRANSPARENT);
 
@@ -125,7 +125,7 @@ public class HelloController implements Initializable {
 
 
                 }
-                 else{
+                else{
 
 
 

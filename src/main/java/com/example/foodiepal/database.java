@@ -22,7 +22,7 @@ public class database {
 
 
             String user = "root";
-            String password = "";
+            //String password = "";
 
 
             Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/project", "root", "");

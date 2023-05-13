@@ -42,7 +42,7 @@ public class HelloApplication extends Application {
             stage.setOpacity(1);
         });
 
-       stage.initStyle(StageStyle.TRANSPARENT);
+        stage.initStyle(StageStyle.TRANSPARENT);
 
         stage.setScene(scene);
         stage.show();
