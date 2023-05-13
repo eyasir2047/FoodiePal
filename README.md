@@ -10,7 +10,7 @@ Foodipal includes the following features:
 + Manage employees: Add new employees, view and edit employee information, and assign roles to employees
 + View reports: Generate reports on sales, orders, and employee performance
 
-##Technology 
+## Technology 
 + Java 
 + Javafx
 + MySQL
