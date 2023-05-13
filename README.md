@@ -12,7 +12,7 @@ Foodipal includes the following features:
 
 ## Platform, Library & Tools
 
-+ Java - A high-level, object-oriented programming language used to develop this project
++ Java - A high-level,robust object-oriented programming language used to develop this project
 
 + JavaFX- A software platform for creating and delivering desktop applications!
 
