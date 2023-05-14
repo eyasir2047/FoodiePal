@@ -1,4 +1,4 @@
-## Foodipal - Restaurant Management System
+## Foodiepal - Restaurant Management System
 Foodipal is a restaurant management system that helps restaurants manage orders, menus, tables, and more.
 
 ## Features
@@ -10,6 +10,7 @@ Foodipal includes the following features:
 + Manage tables: Create and edit tables, assign tables to orders, and view table statuses
 + Manage employees: Add new employees, view and edit employee information, and assign roles to employees
 + View reports: Generate reports on sales, orders, and employee performance
++ Income : Today's and Total's Income
 
 ## Platform, Library & Tools
 
